@@ -96,6 +96,37 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self._abort_if_unique_id_configured()
         return await self.async_step_user(user_input)
 
+    async def async_step_reconfigure(
+        self, user_input: dict[str, Any] | None = None
+    ) -> config_entries.ConfigFlowResult:
+        """Handle reconfiguration of the integration."""
+        entry = self.hass.config_entries.async_get_entry(self.context["entry_id"])
+        errors = {}
+
+        if user_input is not None:
+            try:
+                await validate_input(self.hass, user_input)
+                return self.async_update_reload_and_abort(
+                    entry,
+                    data={**entry.data, SUNPOWER_HOST: user_input[SUNPOWER_HOST]},
+                    title=f"PVS {user_input[SUNPOWER_HOST]}",
+                )
+            except CannotConnect:
+                errors["base"] = "cannot_connect"
+            except Exception:  # pylint: disable=broad-except
+                _LOGGER.exception("Unexpected exception")
+                errors["base"] = "unknown"
+
+        return self.async_show_form(
+            step_id="reconfigure",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(SUNPOWER_HOST, default=entry.data.get(SUNPOWER_HOST)): str,
+                }
+            ),
+            errors=errors,
+        )
+
 
 class OptionsFlowHandler(config_entries.OptionsFlow):
     async def async_step_init(

@@ -9,6 +9,12 @@
           "use_product_names": "Use products in entity names (not recommended)"
         },
         "description": "Hostname or IP of PVS (usually 172.27.153.1)"
+      },
+      "reconfigure": {
+        "data": {
+          "host": "Host"
+        },
+        "description": "Update the IP address or hostname of your PVS"
       }
     },
     "error": {
