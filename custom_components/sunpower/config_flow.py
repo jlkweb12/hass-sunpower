@@ -1,6 +1,7 @@
 """Config flow for sunpower integration."""
 
 import logging
+from typing import Any
 
 import voluptuous as vol
 from homeassistant import (
@@ -59,7 +60,6 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for sunpower."""
 
     VERSION = 1
-    CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_POLL
 
     @staticmethod
     @core.callback
@@ -69,7 +69,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """Create the options flow."""
         return OptionsFlowHandler(config_entry)
 
-    async def async_step_user(self, user_input: dict[str, any] | None = None):
+    async def async_step_user(self, user_input: dict[str, Any] | None = None):
         """Handle the initial step."""
         errors = {}
         _LOGGER.debug(f"User Setup input {user_input}")
@@ -90,7 +90,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             errors=errors,
         )
 
-    async def async_step_import(self, user_input: dict[str, any] | None = None):
+    async def async_step_import(self, user_input: dict[str, Any] | None = None):
         """Handle import."""
         await self.async_set_unique_id(user_input[SUNPOWER_HOST])
         self._abort_if_unique_id_configured()
@@ -98,14 +98,10 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
 
 class OptionsFlowHandler(config_entries.OptionsFlow):
-    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
-        """Initialize options flow."""
-        self.config_entry = config_entry
-
     async def async_step_init(
         self,
-        user_input: dict[str, any] | None = None,
-    ) -> config_entries.FlowResult:
+        user_input: dict[str, Any] | None = None,
+    ) -> config_entries.ConfigFlowResult:
         """Manage the options."""
         _LOGGER.debug(f"Options input {user_input} {self.config_entry}")
         options = dict(self.config_entry.options)
