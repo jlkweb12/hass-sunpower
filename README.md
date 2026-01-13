@@ -2,9 +2,14 @@
 
 Home Assistant SunPower Integration using the local installer ethernet interface.
 
-Original Integration is [https://github.com/krbaker/hass-sunpower](https://github.com/krbaker/hass-sunpower)
+This is a maintained fork of the original [krbaker/hass-sunpower](https://github.com/krbaker/hass-sunpower) integration.
 
-* If this is a fork, please add what's different here and fix up the badges below
+**Changes in this fork:**
+- Improved connection resilience after network disconnects
+- Fixed race condition causing `KeyError: 'devices'` crashes
+- Added retry logic with exponential backoff for transient failures
+- Fixed bootstrap timeout issues (no longer blocks HA startup)
+- Uses cached data during connection failures instead of crashing
 
 [![GitHub Release][releases-shield]][releases]
 [![GitHub Activity][commits-shield]][commits]
@@ -42,13 +47,12 @@ Notes:
 
 ## Installation
 
-1. Click install.
-2. Install HACS
-3. Add this Repo to HACS by going to the 3 dots on the right ...-> Custom repositories ->
- Repository: krbaker/hass-sunpower Category: integration
-4. Install this integration in HACS
-5. Restart Home Assistant
-6. In the Home Assistant UI go to "Configuration" -> "Integrations" click "+" and search for "Sunpower".
+1. Install HACS if you haven't already
+2. Add this Repo to HACS by going to the 3 dots on the right ...-> Custom repositories ->
+ Repository: jlkweb12/hass-sunpower Category: integration
+3. Install this integration in HACS
+4. Restart Home Assistant
+5. In the Home Assistant UI go to "Configuration" -> "Integrations" click "+" and search for "Sunpower".
    * The main configuration is IP/Hostname. If setup with a NAT as described below the IP will be 172.27.153.1.
    Note the network setup is for most people the challenging setup of this integration.
    * Requires that the management LAN interface is plugged in,
@@ -285,10 +289,10 @@ See [Issue-15](https://github.com/krbaker/hass-sunpower/issues/15)
 ***
 [mppt]: https://en.wikipedia.org/wiki/Maximum_power_point_tracking
 [power-factor]: https://en.wikipedia.org/wiki/Power_factor
-[commits-shield]: https://img.shields.io/github/commit-activity/y/custom-components/blueprint.svg?style=for-the-badge
-[commits]: https://github.com/krbaker/hass-sunpower/commits/master
-[maintenance-shield]: https://img.shields.io/badge/maintainer-Keith%20Baker%20%40krbaker-blue.svg?style=for-the-badge
-[releases-shield]: https://img.shields.io/github/release/krbaker/hass-sunpower.svg?style=for-the-badge
-[releases]: https://github.com/krbaker/hass-sunpower/releases
+[commits-shield]: https://img.shields.io/github/commit-activity/y/jlkweb12/hass-sunpower.svg?style=for-the-badge
+[commits]: https://github.com/jlkweb12/hass-sunpower/commits/main
+[maintenance-shield]: https://img.shields.io/badge/maintainer-Justin%20Klein%20%40jlkweb12-blue.svg?style=for-the-badge
+[releases-shield]: https://img.shields.io/github/release/jlkweb12/hass-sunpower.svg?style=for-the-badge
+[releases]: https://github.com/jlkweb12/hass-sunpower/releases
 [sunpower-us]: https://us.sunpower.com/products/solar-panels
 [pi_setup]: https://starreveld.com/PVS6%20Access%20and%20API.pdf
