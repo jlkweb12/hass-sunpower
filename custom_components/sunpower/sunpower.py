@@ -38,6 +38,30 @@ class SunPowerMonitor:
         for attempt in range(MAX_RETRIES):
             try:
                 response = requests.get(url, timeout=timeout)
+
+                # Check HTTP status codes
+                if response.status_code == 503:
+                    error_msg = "PVS returned 503 Service Unavailable - PVS may need reboot"
+                    _LOGGER.error(error_msg)
+                    if attempt < MAX_RETRIES - 1:
+                        delay = RETRY_DELAYS[attempt]
+                        _LOGGER.warning("Retrying in %ds (attempt %d/%d)", delay, attempt + 1, MAX_RETRIES)
+                        time.sleep(delay)
+                        continue
+                    raise ConnectionException(error_msg)
+                elif response.status_code == 500:
+                    error_msg = "PVS returned 500 Internal Server Error - PVS may need reboot"
+                    _LOGGER.error(error_msg)
+                    raise ConnectionException(error_msg)
+                elif response.status_code == 502:
+                    error_msg = "PVS returned 502 Bad Gateway"
+                    _LOGGER.error(error_msg)
+                    raise ConnectionException(error_msg)
+                elif response.status_code != 200:
+                    error_msg = f"PVS returned unexpected HTTP status {response.status_code}"
+                    _LOGGER.error(error_msg)
+                    raise ConnectionException(error_msg)
+
                 return response.json()
             except requests.exceptions.ConnectionError as error:
                 last_error = error
