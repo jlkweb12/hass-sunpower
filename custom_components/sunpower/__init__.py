@@ -1,5 +1,6 @@
 """The sunpower integration."""
 
+import asyncio
 import logging
 import time
 from datetime import timedelta
@@ -276,12 +277,28 @@ def sunpower_fetch(
 
     try:
         if (time.time() - PREVIOUS_PVS_SAMPLE_TIME) >= (sunpower_update_invertal - 1):
+            new_data = sunpower_monitor.device_list()
+            # Validate response has required data before caching
+            if not isinstance(new_data, dict) or "devices" not in new_data:
+                _LOGGER.warning("PVS returned invalid data (missing 'devices' key): %s", new_data)
+                raise ConnectionException("PVS returned invalid response - missing 'devices' key")
+            # Only update cache after successful fetch and validation
             PREVIOUS_PVS_SAMPLE_TIME = time.time()
-            sunpower_data = sunpower_monitor.device_list()
+            sunpower_data = new_data
             PREVIOUS_PVS_SAMPLE = sunpower_data
             _LOGGER.debug("got PVS data %s", sunpower_data)
     except (ParseException, ConnectionException) as error:
-        raise UpdateFailed from error
+        # If we have valid cached data, use it instead of failing
+        if PREVIOUS_PVS_SAMPLE and "devices" in PREVIOUS_PVS_SAMPLE:
+            _LOGGER.warning("PVS fetch failed, using cached data: %s", error)
+            sunpower_data = PREVIOUS_PVS_SAMPLE
+        else:
+            _LOGGER.error("PVS fetch failed and no valid cached data available: %s", error)
+            raise UpdateFailed(f"Cannot connect to PVS and no cached data available: {error}") from error
+
+    # Final validation before processing
+    if not sunpower_data or "devices" not in sunpower_data:
+        raise UpdateFailed("No valid PVS data available - 'devices' key missing")
 
     data = convert_sunpower_data(sunpower_data)
     if ESS_DEVICE_TYPE in data:  # Look for an ESS in PVS data
@@ -377,14 +394,23 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         SUNPOWER_COORDINATOR: coordinator,
     }
 
-    start = time.time()
-    # Need to make sure this data loads on setup, be aggressive about retries
-    while not coordinator.data:
-        _LOGGER.debug("Config Update Attempt")
-        await coordinator.async_refresh()
-        if (time.time() - start) > (SETUP_TIMEOUT_MIN * 60):
-            _LOGGER.error("Failed to update data")
-            break
+    # Try to get initial data, but don't block setup if PVS is slow/unreachable
+    # Entities will show as unavailable until data arrives
+    try:
+        async with asyncio.timeout(30):  # 30 second timeout for initial fetch
+            await coordinator.async_refresh()
+            _LOGGER.debug("Initial PVS data fetch successful")
+    except asyncio.TimeoutError:
+        _LOGGER.warning(
+            "Initial PVS data fetch timed out after 30s - will retry in background. "
+            "Entities may show as unavailable until PVS responds."
+        )
+    except Exception as err:
+        _LOGGER.warning(
+            "Initial PVS data fetch failed: %s - will retry in background. "
+            "Entities may show as unavailable until PVS responds.",
+            err
+        )
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
