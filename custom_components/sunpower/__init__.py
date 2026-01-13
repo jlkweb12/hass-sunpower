@@ -230,18 +230,20 @@ def convert_ess_data(ess_data, data):
         data[SUNVAULT_DEVICE_TYPE][sunvault_serial]["sunvault_amperage"] = sum(
             sunvault_amperages,
         )
-        data[SUNVAULT_DEVICE_TYPE][sunvault_serial]["sunvault_voltage"] = sum(
-            sunvault_voltages,
-        ) / len(sunvault_voltages)
-        data[SUNVAULT_DEVICE_TYPE][sunvault_serial]["sunvault_temperature"] = sum(
-            sunvault_temperatures,
-        ) / len(sunvault_temperatures)
-        data[SUNVAULT_DEVICE_TYPE][sunvault_serial]["sunvault_customer_state_of_charge"] = sum(
-            sunvault_customer_state_of_charges,
-        ) / len(sunvault_customer_state_of_charges)
-        data[SUNVAULT_DEVICE_TYPE][sunvault_serial]["sunvault_system_state_of_charge"] = sum(
-            sunvault_system_state_of_charges,
-        ) / len(sunvault_system_state_of_charges)
+        data[SUNVAULT_DEVICE_TYPE][sunvault_serial]["sunvault_voltage"] = (
+            sum(sunvault_voltages) / len(sunvault_voltages) if sunvault_voltages else 0
+        )
+        data[SUNVAULT_DEVICE_TYPE][sunvault_serial]["sunvault_temperature"] = (
+            sum(sunvault_temperatures) / len(sunvault_temperatures) if sunvault_temperatures else 0
+        )
+        data[SUNVAULT_DEVICE_TYPE][sunvault_serial]["sunvault_customer_state_of_charge"] = (
+            sum(sunvault_customer_state_of_charges) / len(sunvault_customer_state_of_charges)
+            if sunvault_customer_state_of_charges else 0
+        )
+        data[SUNVAULT_DEVICE_TYPE][sunvault_serial]["sunvault_system_state_of_charge"] = (
+            sum(sunvault_system_state_of_charges) / len(sunvault_system_state_of_charges)
+            if sunvault_system_state_of_charges else 0
+        )
         data[SUNVAULT_DEVICE_TYPE][sunvault_serial]["sunvault_power_input"] = sum(
             sunvault_power_inputs,
         )
