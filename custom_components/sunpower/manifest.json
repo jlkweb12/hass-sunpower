@@ -10,6 +10,6 @@
   "issue_tracker": "https://github.com/krbaker/hass-sunpower/issues",
   "requirements": ["requests"],
   "ssdp": [],
-  "version": "2024.5.3",
+  "version": "2024.5.4",
   "zeroconf": []
 }
